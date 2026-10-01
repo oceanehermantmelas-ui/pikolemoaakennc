@@ -1,0 +1,179 @@
+/* ==========================================
+   VARIABLES : change les couleurs ici
+   ========================================== */
+:root {
+  --bg1: #0a1f3d;        /* nuit océan */
+  --bg2: #13496b;
+  --panel: #12284a;
+  --panel-2: #1b3a66;
+  --text: #fff8e8;
+  --muted: #a8c4e6;
+  --accent: #ff4d6d;     /* corail */
+  --accent-dark: #b81e43;
+  --gold: #ffcf3f;       /* étape disponible */
+  --gold-dark: #c98a00;
+  --ok: #37e08a;         /* étape validée */
+  --ok-dark: #138a52;
+  --lock: #6f82a8;       /* étape verrouillée */
+  --lock-dark: #3c4b6b;
+  --font-title: "Lilita One", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+  --font-body: "Nunito", "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  color: var(--text); font-family: var(--font-body); font-weight: 600;
+  display: flex; flex-direction: column;
+  background:
+    radial-gradient(circle at 20% 10%, #2a7fa844, transparent 40%),
+    radial-gradient(circle at 85% 80%, #ff4d6d22, transparent 40%),
+    linear-gradient(180deg, var(--bg1), var(--bg2));
+  background-attachment: fixed;
+}
+button { font: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+/* ---------- En-tête : titre + barre d'XP ---------- */
+.topbar {
+  position: relative; z-index: 5;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 10px 28px; padding: 10px 18px;
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
+  border-bottom: 4px solid var(--gold);
+  box-shadow: 0 6px 0 #0006, 0 10px 24px #0008;
+}
+h1 {
+  margin: 0; font-family: var(--font-title); font-weight: 400;
+  font-size: clamp(1.6rem, 6vw, 2.6rem); letter-spacing: .03em; line-height: 1;
+  color: var(--gold);
+  -webkit-text-stroke: 2px #6b3b00; paint-order: stroke fill;
+  text-shadow: 0 3px 0 #6b3b00, 0 6px 0 #0005;
+  transform: rotate(-1.5deg);
+}
+.progress { flex: 1; min-width: 210px; max-width: 360px; font-family: var(--font-title); font-size: .95rem; letter-spacing: .05em; }
+.bar {
+  position: relative; height: 18px; margin-top: 5px; border-radius: 99px; overflow: hidden;
+  background: #06122a; border: 3px solid #fff8e8; box-shadow: inset 0 3px 5px #0009, 0 3px 0 #0006;
+}
+#progress-fill {
+  height: 100%; width: 0; border-radius: 99px; transition: width .7s cubic-bezier(.3,1.4,.5,1);
+  background: repeating-linear-gradient(-45deg, #ffffff30 0 8px, transparent 8px 16px), linear-gradient(180deg, #8dffc0, var(--ok));
+  box-shadow: inset 0 -4px 0 #0003;
+}
+
+/* ---------- Carte ---------- */
+.map-wrap { flex: 1; overflow: auto; touch-action: pan-x pan-y pinch-zoom; padding: 10px; }
+.stage {
+  position: relative; width: 100%; max-width: 900px; margin: 0 auto; transition: width .25s;
+  border: 5px solid var(--gold); border-radius: 24px; overflow: visible;
+  box-shadow: 0 0 0 4px #6b3b00, 0 10px 0 4px #0005, 0 0 50px #ffcf3f44;
+  background: var(--bg1);
+}
+#map-img { display: block; width: 100%; height: auto; user-select: none; border-radius: 18px; }
+#points { position: absolute; inset: 0; }
+
+/* ---------- Points : boutons 3D ---------- */
+.point {
+  position: absolute; transform: translate(-50%, -50%);
+  width: clamp(38px, 6.5vw, 54px); aspect-ratio: 1; border-radius: 50%; padding: 0;
+  display: grid; place-items: center; font-size: clamp(1.05rem, 3.2vw, 1.5rem);
+  border: 4px solid #fff8e8; transition: transform .15s;
+}
+.point:hover { transform: translate(-50%, -56%) scale(1.18); }
+.point:active { transform: translate(-50%, -46%) scale(.95); }
+.point.locked    { background: radial-gradient(circle at 35% 30%, #a3b3d1, var(--lock)); box-shadow: 0 5px 0 var(--lock-dark), 0 9px 12px #000a; filter: saturate(.7); }
+.point.available { background: radial-gradient(circle at 35% 30%, #fff1a8, var(--gold)); box-shadow: 0 5px 0 var(--gold-dark), 0 9px 12px #000a; animation: beat 1.3s infinite; }
+.point.available::after { /* anneau radar */
+  content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 3px solid var(--gold);
+  animation: radar 1.6s infinite; pointer-events: none;
+}
+.point.done { background: radial-gradient(circle at 35% 30%, #b8ffd9, var(--ok)); box-shadow: 0 5px 0 var(--ok-dark), 0 9px 12px #000a; }
+.point.just-unlocked { animation: pop .9s 2; }
+.point .label {
+  position: absolute; bottom: 135%; left: 50%; transform: translateX(-50%) translateY(6px);
+  background: var(--panel); color: var(--text); font-size: .75rem; padding: 4px 10px;
+  border: 2px solid var(--gold); border-radius: 10px; white-space: nowrap;
+  opacity: 0; pointer-events: none; transition: .2s;
+}
+.point:hover .label, .point:focus-visible .label { opacity: 1; transform: translateX(-50%); }
+@keyframes beat  { 0%,100% { scale: 1; } 50% { scale: 1.12; } }
+@keyframes radar { from { transform: scale(1); opacity: .9; } to { transform: scale(2); opacity: 0; } }
+@keyframes pop   { 0% { transform: translate(-50%,-50%) scale(.3) rotate(-40deg); } 60% { transform: translate(-50%,-50%) scale(1.6) rotate(12deg); } 100% { transform: translate(-50%,-50%) scale(1); } }
+
+/* ---------- Boutons 3D (outils + actions) ---------- */
+.tools { display: flex; gap: 10px; justify-content: center; padding: 12px; background: linear-gradient(180deg, var(--panel), #0a1a33); border-top: 4px solid var(--gold); }
+.tools button, .primary {
+  font-family: var(--font-title); letter-spacing: .04em; color: #fff;
+  background: linear-gradient(180deg, #ff7a93, var(--accent)); border: 3px solid #fff8e8; border-radius: 14px;
+  box-shadow: 0 5px 0 var(--accent-dark), 0 8px 10px #0006; transition: transform .1s, box-shadow .1s;
+}
+.tools button { min-width: 48px; height: 44px; font-size: 1.3rem; }
+.tools button:hover, .primary:hover { filter: brightness(1.1); }
+.tools button:active, .primary:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--accent-dark); }
+.tools .ghost { background: transparent; border-color: var(--muted); color: var(--muted); box-shadow: 0 4px 0 #0006; padding: 0 16px; font-size: .9rem; }
+
+/* ---------- Modale : fenêtre de dialogue ---------- */
+.overlay { position: fixed; inset: 0; z-index: 10; background: #020b1acc; backdrop-filter: blur(4px); display: grid; place-items: center; padding: 16px; }
+.overlay[hidden], .toast[hidden], .final[hidden] { display: none; }
+.modal {
+  position: relative; width: 100%; max-width: 500px; max-height: 90vh; overflow: auto;
+  padding: 26px 22px 22px; border-radius: 22px;
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
+  border: 5px solid var(--gold); box-shadow: 0 0 0 4px #6b3b00, 0 14px 0 4px #0006, 0 0 60px #ffcf3f55;
+  animation: rise .35s cubic-bezier(.3,1.5,.5,1);
+}
+.modal h2 { margin: 4px 0 8px; font-family: var(--font-title); font-weight: 400; font-size: 1.7rem; color: var(--gold); text-shadow: 0 3px 0 #0006; }
+.modal .step-num {
+  display: inline-block; padding: 3px 14px; border-radius: 99px;
+  background: var(--gold); color: #5a3200; font-family: var(--font-title); letter-spacing: .06em; font-size: .9rem;
+  box-shadow: 0 3px 0 var(--gold-dark);
+}
+.modal p { line-height: 1.55; font-size: 1.02rem; }
+.modal img, .modal video { max-width: 100%; border-radius: 12px; border: 3px solid #fff8e8; }
+.close {
+  position: absolute; top: 8px; right: 10px; width: 36px; height: 36px; border-radius: 50%;
+  background: #0006; border: 2px solid var(--muted); color: var(--text); font-size: 1.4rem; line-height: 1;
+}
+.modal input {
+  width: 100%; padding: 14px; font: inherit; font-size: 1.1rem; font-weight: 800; text-align: center;
+  border-radius: 14px; border: 3px solid var(--lock); background: #06122a; color: var(--text);
+  box-shadow: inset 0 4px 6px #0008; transition: border-color .2s, box-shadow .2s;
+}
+.modal input:focus { outline: none; border-color: var(--gold); box-shadow: inset 0 4px 6px #0008, 0 0 18px #ffcf3f66; }
+.primary { width: 100%; margin-top: 14px; padding: 13px; font-size: 1.15rem; }
+.hint-btn { display: block; margin: 12px auto 0; background: none; border: 0; color: var(--muted); font-weight: 800; }
+.hint-btn:hover { color: var(--gold); }
+#feedback { min-height: 1.5em; margin: 10px 0 0; text-align: center; font-weight: 800; }
+.msg-bad { color: #ff8fa3; animation: shake .4s; }
+.lock-anim { font-size: 3.4rem; text-align: center; filter: drop-shadow(0 4px 0 #0006); }
+.lock-anim.open { animation: unlock .9s; }
+@keyframes rise   { from { transform: translateY(30px) scale(.9); opacity: 0; } }
+@keyframes shake  { 20%,60% { transform: translateX(-7px); } 40%,80% { transform: translateX(7px); } }
+@keyframes unlock { 0% { transform: scale(.5) rotate(0); } 40% { transform: scale(1.7) rotate(-20deg); } 100% { transform: scale(1) rotate(0); } }
+
+/* ---------- Notification ---------- */
+.toast {
+  position: fixed; top: 84px; left: 50%; transform: translateX(-50%); z-index: 20; max-width: 92vw; text-align: center;
+  background: linear-gradient(180deg, #ffe27a, var(--gold)); color: #5a3200;
+  font-family: var(--font-title); padding: 11px 22px; border: 3px solid #fff8e8; border-radius: 16px;
+  box-shadow: 0 5px 0 var(--gold-dark), 0 10px 20px #0008; animation: banner .5s cubic-bezier(.3,1.6,.5,1);
+}
+@keyframes banner { from { transform: translateX(-50%) translateY(-40px) scale(.8); opacity: 0; } }
+
+/* ---------- Confettis ---------- */
+.confetti { position: fixed; top: -14px; width: 10px; height: 15px; z-index: 30; pointer-events: none; border-radius: 2px; animation: fall linear forwards; }
+@keyframes fall { to { transform: translateY(108vh) rotate(720deg); } }
+
+/* ---------- Écran final ---------- */
+.final { position: fixed; inset: 0; z-index: 25; display: grid; place-items: center; padding: 16px; overflow: hidden;
+  background: radial-gradient(circle, #1f6f9a, var(--bg1) 70%); }
+.final::before { /* rayons tournants */
+  content: ""; position: absolute; width: 220vmax; height: 220vmax;
+  background: repeating-conic-gradient(#ffcf3f22 0 10deg, transparent 10deg 20deg);
+  animation: spin 40s linear infinite;
+}
+.final-card { position: relative; text-align: center; max-width: 500px; font-size: 1.1rem; }
+.final-card h2 { font-family: var(--font-title); font-weight: 400; font-size: clamp(2.2rem, 9vw, 3.6rem); margin: 0 0 8px; color: var(--gold); -webkit-text-stroke: 2px #6b3b00; paint-order: stroke fill; text-shadow: 0 5px 0 #6b3b00, 0 9px 0 #0005; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> <img src="assets/Plan de travail 2.png" alt="Logo"></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ===== EN-TÊTE : titre + progression ===== -->
+  <header class="topbar">
+    <h1 id="game-title">PIKO le MOAKEN</h1>
+    <div class="progress">
+      <span id="progress-label">PROGRESSION : 0 / 0</span>
+      <div class="bar"><div id="progress-fill"></div></div>
+    </div>
+  </header>
+
+  <!-- ===== CARTE ===== -->
+  <main class="map-wrap" id="map-wrap">
+    <div class="stage" id="stage">
+      <img src="assets/carte-campus.png" alt="Carte du campus" id="map-img" draggable="false">
+      <!-- Les points sont ajoutés ici par script.js -->
+      <div id="points"></div>
+    </div>
+  </main>
+
+  <!-- ===== BARRE D'OUTILS ===== -->
+  <div class="tools">
+    <button id="zoom-out" aria-label="Dézoomer">−</button>
+    <button id="zoom-in" aria-label="Zoomer">+</button>
+    <button id="restart" class="ghost">↻ Recommencer l'aventure</button>
+  </div>
+
+  <!-- ===== FENÊTRE MODALE (verrouillé / charade / succès) ===== -->
+  <div class="overlay" id="overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" id="modal">
+      <button class="close" id="modal-close" aria-label="Fermer">×</button>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- ===== NOTIFICATION ===== -->
+  <div class="toast" id="toast" hidden></div>
+
+  <!-- ===== ÉCRAN FINAL ===== -->
+  <section class="final" id="final" hidden>
+    <div class="final-card">
+      <h2>🎉 FÉLICITATIONS !</h2>
+      <p>Tu as terminé l'aventure !</p>
+      <p id="final-message"></p>
+      <button class="primary" id="replay">REJOUER</button>
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
